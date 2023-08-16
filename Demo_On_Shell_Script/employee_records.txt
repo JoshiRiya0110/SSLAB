@@ -1,0 +1,16 @@
+101:John Doe:Manager:Finance:9999991:50000
+102:Jane Smith:Developer:Finance:9999992:40000
+103:Michael Joe:Analyst:Finance:9999993:50000
+104:Emily Brown:Manager:HumanRes:9999999:66000
+105:David Lee:Developer:Finance:9999995:78000
+106:Alex Tower:Manager:Finance:9999996:35000
+107:Sarah Adam:Analyst:Marketing:9999997:50000
+108:Robert Davis:Developer:Finance:9999998:48000
+109:Lisa Miller:Manager:Operations:9999999:90000
+110:James Wilson:Analyst:Finance:9999990:35000
+111:King Doe:Manager:Technology:9978654:45000
+112:Taylor Swift:Developer:Finance:9999920:63000
+113:Kristen Joe:Engineer:Finance:9999921:77000
+114:Pete Brown:Developer:Finance:9999922:88000
+115:David Singh:Analyst:HumanRes:9999923:95000 
+116:Alex Mishra:Manager:Marketing:9999978:25000
