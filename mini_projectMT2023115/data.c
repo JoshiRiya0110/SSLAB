@@ -94,6 +94,11 @@ void addStudent()
     user.isAccessAllowed = 1;
     strcpy(user.password,"iiitb");
 
+    user.courseID[0] = -1;
+    user.courseID[1] = -1;
+    user.courseID[2] = -1;
+    user.courseID[3] = -1;
+
     printf("Your userID is : %d\n",user.userID);
     write(fd,&user,sizeof(Student));
     printf("Do you want to continue(0/1)? ");
@@ -118,6 +123,11 @@ void addStudent()
 
         user.isAccessAllowed = 1;
         strcpy(user.password,"iiitb");
+
+        user.courseID[0] = -1;
+        user.courseID[1] = -1;
+        user.courseID[2] = -1;
+        user.courseID[3] = -1;
 
         printf("Your userID is : %d\n",user.userID);
 
@@ -198,7 +208,11 @@ void addProfessor()
 
 }
 
-void addDummyCourse()
+
+
+
+
+void addCourse()
 {
         int fd=open("CUfile",O_RDWR | O_CREAT,0744);
         Courses course;
@@ -227,7 +241,11 @@ void addDummyCourse()
 
         course.profUserID = 0;
 
+        printf("Your courseID is : %d\n",course.courseID);
+        write(fd,&course,sizeof(Courses));
+        
         close(fd);
+
         
 }
 
@@ -252,7 +270,7 @@ int main(){
                 addStudent();
                 break;
             case 4:
-                addDummyCourse();
+                addCourse();
                 break;
             case 5:
                 exit(0);

@@ -20,7 +20,7 @@ int checkStudent(Student currUser);
 void processAdminMenu(int nsd, int select);
 void processProfessorMenu(int nsd, int select);
 void processStudentMenu(int nsd, int select);
-
+void removeCourse(int nsd);
 
 
 //**************************************************************************************ADMIN FUNCTIONS*****************************************************
@@ -468,16 +468,17 @@ void displayOfferedCourses(int nsd)
 				fl2=fcntl(fd2,F_SETLKW,&lock2);	//lock the selected record
 				//getchar();
 
+
 				lseek(fd2,(i2)*sizeof(Courses),SEEK_SET);  //changing the file pointer to the selected record
 				read(fd2,&tempCourse,sizeof(Courses));
 
-				printf("tempcourse id %d",tempCourse.courseID);
-				printf("tempcourse name %s",tempCourse.name);
+				printf("tempcourse id %d\n",tempCourse.courseID);
+				printf("tempcourse name %s\n",tempCourse.name);
 
 
 				write(nsd,&tempCourse,sizeof(tempCourse));
-				printf("tempcourse id %d",tempCourse.courseID);
-				printf("tempcourse name %s",tempCourse.name);
+				printf("tempcourse id %d\n",tempCourse.courseID);
+				printf("tempcourse name %s\n",tempCourse.name);
 
 
 				lock2.l_type=F_UNLCK;
@@ -508,7 +509,7 @@ void addNewCourse(int nsd, int profId)
 	lock1.l_type = F_RDLCK;
 	lock1.l_whence=SEEK_SET;
 	lock1.l_start=(i)*sizeof(Professor);    	     //nth record
-	lock1.l_len=sizeof(Professor);	             //sizeof(record)
+	lock1.l_len=sizeof(Professor);	                 //sizeof(record)
 	lock1.l_pid=getpid();
 
 	fl1=fcntl(fd1,F_SETLKW,&lock1);	//lock the selected record
@@ -564,7 +565,7 @@ void addNewCourse(int nsd, int profId)
 
 		//printf("new user userid %d\n",course.userID);
 		//maine jo client ne course tsructure bheja tha usko file me likh diya
-		lseek(fd2,sizeof(Courses),SEEK_END); 
+		
 		int j=write(fd2,&course,sizeof(Courses));
 
 
@@ -612,7 +613,282 @@ void addNewCourse(int nsd, int profId)
 
 }
 
+
+
+void removeCourse(int nsd)
+{
+	int profID;
+	int courseId;
+	bool result;
+
+	read(nsd, &profID ,sizeof(profID));
+	read(nsd, &courseId, sizeof(courseId));
+
+	
+	int i = profID - 1000;
+	//printf("\n i value : %d\n",i);
+	int fd1=open("PUfile",O_RDWR,0744);
+
+	if(fd1 == -1)
+	{
+		result = false;
+		write(nsd, &result, sizeof(result));
+		return;
+	}
+	
+	Professor temp;
+
+	int fl1;
+	struct flock lock1;
+	lock1.l_type = F_WRLCK;
+	lock1.l_whence=SEEK_SET;
+	lock1.l_start=(i)*sizeof(Professor);    	     //nth record
+	lock1.l_len=sizeof(Professor);	             //sizeof(record)
+	lock1.l_pid=getpid();
+
+	fl1=fcntl(fd1,F_SETLKW,&lock1);	//lock the selected record
+	//getchar();
+
+	lseek(fd1,(i)*sizeof(Professor),SEEK_SET);  //changing the file pointer to the selected record
+	read(fd1,&temp,sizeof(Professor));						
+
+
+	for(int i=0 ; i<4 ; i++)
+	{
+		if(temp.courseID[i] == courseId)
+		{
+			temp.courseID[i] = -1;
+		}
+	}
+
+	lseek(fd1, (i)*sizeof(Professor),SEEK_SET);
+	write(fd1,&temp,sizeof(temp));
+
+	lock1.l_type=F_UNLCK;
+	fcntl(fd1,F_SETLK,&lock1);
+
+	close(fd1);
+
+
+
+	Courses course;
+
+	int fd2=open("CUfile",O_RDWR,0744);
+	if(fd2 == -1)
+	{
+		result = false;
+		write(nsd, &result, sizeof(result));
+		return;
+	}
+	int fl2;
+	i = courseId - 1000;
+	struct flock lock2;
+	lock2.l_type = F_WRLCK;
+	lock2.l_whence=SEEK_SET;
+	lock2.l_start=(i)*sizeof(Courses);    	     //nth record
+	lock2.l_len=sizeof(Courses);	             //sizeof(record)
+	lock2.l_pid=getpid();
+
+	fl2=fcntl(fd2,F_SETLKW,&lock2);	//lock the selected record
+	//getchar();
+
+	lseek(fd2,(i)*sizeof(Courses),SEEK_SET);  //changing the file pointer to the selected record
+	read(fd2,&course,sizeof(Courses));						
+
+	course.isRemoved = 1;
+	
+
+	lseek(fd2, (i)*sizeof(Courses),SEEK_SET);
+	write(fd2,&course,sizeof(Courses));
+
+	lock2.l_type=F_UNLCK;
+	fcntl(fd2,F_SETLK,&lock2);
+
+	close(fd2);
+
+	result = true;
+	write(nsd, &result, sizeof(result));
+	return;
+
+}
+
+
+
+
+void updateCourse(int nsd)
+{
+	int courseId;
+	int choice;
+	bool result;
+	int i;
+	
+	read(nsd, &courseId, sizeof(courseId));
+	read(nsd, &choice, sizeof(choice));
+
+
+	Courses course;
+
+	int fd=open("CUfile",O_RDWR,0744);
+	if(fd == -1)
+	{
+		result = false;
+		write(nsd, &result, sizeof(result));
+		return;
+	}
+	int fl2;
+	i = courseId - 1000;
+	struct flock lock2;
+	lock2.l_type = F_WRLCK;
+	lock2.l_whence=SEEK_SET;
+	lock2.l_start=(i)*sizeof(Courses);    	     //nth record
+	lock2.l_len=sizeof(Courses);	             //sizeof(record)
+	lock2.l_pid=getpid();
+
+	fl2=fcntl(fd,F_SETLKW,&lock2);	//lock the selected record
+	//getchar();
+
+	lseek(fd,(i)*sizeof(Courses),SEEK_SET);  //changing the file pointer to the selected record
+	read(fd,&course,sizeof(Courses));						
+
+
+	switch(choice)
+        {
+                case 1:
+                        char name[40];
+                        read(nsd, &name, sizeof(name));
+						strcpy(course.name,name);
+                        break;
+                case 2:
+                        int seats;
+                        read(nsd, &seats, sizeof(seats));
+						course.totalSeats = seats;
+                        break;
+                case 3:
+                        char department[30];
+                        read(nsd, &department, sizeof(department));
+						strcpy(course.department,department);
+                        break;
+                case 4:
+                        int credit;
+                        read(nsd, &credit, sizeof(credit));
+						course.credits = credit;
+                        break;
+                default:
+                        printf("You entered wrong choice\n");
+                        break;
+        }
+
+	
+
+	lseek(fd, (i)*sizeof(Courses),SEEK_SET);
+	write(fd,&course,sizeof(Courses));
+
+	lock2.l_type=F_UNLCK;
+	fcntl(fd,F_SETLK,&lock2);
+
+	close(fd);
+
+	result = true;
+	write(nsd, &result, sizeof(result));
+
+
+}
+
+
+
+
 //*****************************************************Student functions*************************************************************
+
+void displayAllCourses(int nsd)
+{
+	printf("displayofferedcourses\n");
+		int studentId;
+		read(nsd, &studentId, sizeof(studentId));
+
+		//now i have to fetch this particular profid structure
+		Student temp;
+		int fd1 = open("SUfile",O_RDWR,0744);
+		int i1  = studentId;
+		i1 = i1 - 1000;
+
+		int fl1;
+		struct flock lock1;
+		lock1.l_type = F_RDLCK;
+		lock1.l_whence=SEEK_SET;
+		lock1.l_start=(i1)*sizeof(Student);    	     //nth record
+		lock1.l_len=sizeof(Student);	             //sizeof(record)
+		lock1.l_pid=getpid();
+
+		fl1=fcntl(fd1,F_SETLKW,&lock1);	//lock the selected record
+		//getchar();
+
+		lseek(fd1,(i1)*sizeof(Student),SEEK_SET);  //changing the file pointer to the selected record
+		read(fd1,&temp,sizeof(Student));
+
+		int count = 0;
+		for(int i=0 ; i<4 ; i++)
+		{
+			if(temp.courseID[i] != -1)
+				count++;
+		}
+		// printf("count %d\n",count);
+		write(nsd, &count, sizeof(count));
+
+		// printf("After write\n");
+
+		for(int i=0 ; i<4 ; i++)
+		{
+			//printf("%d\n",temp.courseID[i]);
+			
+			if(temp.courseID[i] != -1)
+			{
+				Courses tempCourse;
+
+				int fd2 = open("CUfile",O_RDWR,0744);
+
+				int i2=temp.courseID[i];
+				i2 = i2 - 1000;
+
+				//printf("i2 %d\n", i2);
+
+
+				int fl2;
+				struct flock lock2;
+				lock2.l_type = F_RDLCK;
+				lock2.l_whence=SEEK_SET;
+				lock2.l_start=(i2)*sizeof(Courses);    	     //nth record
+				lock2.l_len=sizeof(Courses);	             //sizeof(record)
+				lock2.l_pid=getpid();
+
+				fl2=fcntl(fd2,F_SETLKW,&lock2);	//lock the selected record
+				//getchar();
+
+
+				lseek(fd2,(i2)*sizeof(Courses),SEEK_SET);  //changing the file pointer to the selected record
+				read(fd2,&tempCourse,sizeof(Courses));
+
+				// printf("tempcourse id %d\n",tempCourse.courseID);
+				// printf("tempcourse name %s\n",tempCourse.name);
+
+
+				write(nsd,&tempCourse,sizeof(tempCourse));
+				printf("tempcourse id %d\n",tempCourse.courseID);
+				printf("tempcourse name %s\n",tempCourse.name);
+
+
+				lock2.l_type=F_UNLCK;
+				fcntl(fd2,F_SETLK,&lock2);
+
+				close(fd2);
+			}
+		}
+
+		lock1.l_type=F_UNLCK;
+		fcntl(fd1,F_SETLK,&lock1);
+		close(fd1);	
+}
+
+
 
 void changePassword(int nsd, int id)
 {
@@ -912,7 +1188,6 @@ void processProfessorMenu(int nsd, int select)
 	switch(select)
 	{
 		case 1:
-				printf("ProcessProfessorMenu\n");
 				displayOfferedCourses(nsd);
 				break;
 		case 2:
@@ -921,8 +1196,12 @@ void processProfessorMenu(int nsd, int select)
 				addNewCourse(nsd, id);
 				break;
 		case 3:
+				removeCourse(nsd);
+				break;
 
 		case 4:
+				updateCourse(nsd);
+				break;
 		case 5:
 	}
 }
@@ -933,6 +1212,8 @@ void processStudentMenu(int nsd, int select)
 	switch(select)
 	{
 		case 1:
+				displayAllCourses(nsd);
+				break;
 		case 2:
 		case 3:
 		case 4:

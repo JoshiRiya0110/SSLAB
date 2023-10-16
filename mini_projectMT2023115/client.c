@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
@@ -19,7 +20,7 @@ void attemptAdminLogin(int sock_fd);
 void attemptProfessorLogin(int sock_fd);
 void attemptStudentLogin(int sock_fd);
 
-void add_student(int sock_fd);
+void addStudent(int sock_fd);
 void displayStudentDetails(int sock_fd);
 void addFaculty(int sock_fd);
 void displayFacultyDetails(int sock_fd);
@@ -33,8 +34,9 @@ void addNewCourse(int sock_fd, int profID);
 void removeCourse(int sock_fd);
 void updateCourse(int sock_fd);
 void changePassword(int sock_fd, int id);
+void displayCourse(int sock_fd);
 
-void display_all_courses(int sock_fd);
+void displayAllCourses(int sock_fd);
 void enroll_to_course(int sock_fd);
 void drop_course(int sock_fd);
 void display_enrolled_course_details(int sock_fd);
@@ -254,7 +256,7 @@ void showMenu(int sock_fd){
 
 		switch(select){
 		case 1 :
-			add_student(sock_fd);
+			addStudent(sock_fd);
 			break;
 		case 2 :
                         
@@ -323,6 +325,9 @@ void showMenu(int sock_fd){
 			write(sock_fd,&select,sizeof(int));
 			printf("Thank you\n");
 			exit(0);
+                case 7 :
+                        displayCourse(sock_fd);
+                        break;
 		default :
 			printf("Invalid option!!\n\n");
 			showMenu(sock_fd);
@@ -346,7 +351,7 @@ void showMenu(int sock_fd){
 
                 switch(select){
                 case 1 :
-                        display_all_courses(sock_fd); //poori course file display karo
+                        displayAllCourses(sock_fd); //poori course file display karo
                         break;
                 case 2 :
                         enroll_to_course(sock_fd);
@@ -373,10 +378,42 @@ void showMenu(int sock_fd){
 }
 
 
-//*************Admin related functions***************
+
+void displayCourse(int sock_fd)
+{
+                int fd2 = open("CUfile",O_RDWR,0744);
+		printf("After write\n");
+                int count;
+                Courses endCourse;
+		int val = lseek(fd2,(-1)*sizeof(Courses),SEEK_END);  //changing the file pointer to the selected record
+		read(fd2,&endCourse,sizeof(Courses));
+		count=endCourse.courseID+1;
 
 
-void add_student(int sock_fd)
+		for(int i=0 ; i<count-1000 ; i++)
+		{
+			
+			
+				Courses tempCourse;
+
+
+				lseek(fd2,(i)*sizeof(Courses),SEEK_SET);  //changing the file pointer to the selected record
+				read(fd2,&tempCourse,sizeof(Courses));
+
+				printf("tempcourse id %d\n",tempCourse.courseID);
+				printf("tempcourse name %s\n",tempCourse.name);
+
+
+				
+                }
+                close(fd2);
+
+}
+
+//*****************************************************Admin related functions***************************************************************
+
+
+void addStudent(int sock_fd)
 {
    Student user;
    bool result;
@@ -758,7 +795,14 @@ void modifyFacultyDetails(int sock_fd)
         printf("Age : %d\n",user.age);
 }
 
+
+
+
+
 //**********************************************Professor Functions*********************************************************
+
+
+
 
 void displayOfferedCourses(int sock_fd) // these are the courses that are present under the current faculty
 {
@@ -873,6 +917,7 @@ void addNewCourse(int sock_fd, int profId)
 }
 
 
+
 void removeCourse(int sock_fd)
 {
         int removeCourseID;
@@ -892,6 +937,8 @@ void removeCourse(int sock_fd)
         showMenu(sock_fd);
 }
 
+
+
 void updateCourse(int sock_fd)
 {
         bool result;
@@ -908,6 +955,10 @@ void updateCourse(int sock_fd)
         printf("2. Total No of Seats\n");
         printf("3. Department name\n");
         printf("4. Credits\n");
+
+
+        scanf("%d",&choice);
+        write(sock_fd, &choice, sizeof(choice));
 
         switch(choice)
         {
@@ -952,7 +1003,51 @@ void updateCourse(int sock_fd)
 
 
 
+
+
 //**********************************************Student Functions**************************************************************
+
+
+void displayAllCourses(int sock_fd)
+{
+        Courses course;
+
+        int noOfCourses;
+        
+        //send to server
+        write(sock_fd, &globalUserId, sizeof(globalUserId));
+
+        //from server
+        read(sock_fd, &noOfCourses, sizeof(noOfCourses));
+        for(int i=0 ; i<noOfCourses ; i++)
+        {
+                read(sock_fd, &course, sizeof(course));
+                fflush(stdout);
+
+                printf("Course Name : %s\n",course.name);
+                fflush(stdout);
+
+                printf("Course ID : %d\n",course.courseID);
+                fflush(stdout);
+
+                printf("Total Seats : %d\n",course.totalSeats);
+                fflush(stdout);
+
+                printf("Number of credits : %d\n",course.credits);
+                fflush(stdout);
+
+                printf("Number of available seats : %d\n",course.noOfAvailableSeats);
+                fflush(stdout);
+
+                printf("Department : %s\n",course.department);
+                fflush(stdout);
+
+                printf("\n\n\n");
+
+        }
+        showMenu(sock_fd);
+}
+
 
 void changePassword(int sock_fd, int id)
 {
@@ -986,7 +1081,7 @@ void changePassword(int sock_fd, int id)
 
 }
 
-void display_all_courses(int sock_fd){}
+
 void enroll_to_course(int sock_fd){}
 void drop_course(int sock_fd){}
 void display_enrolled_course_details(int sock_fd){}
