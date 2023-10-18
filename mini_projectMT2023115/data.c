@@ -147,12 +147,15 @@ void addProfessor()
     newPUser.userID=1000;
 
     write(1, "Enter faculty name : ",sizeof("Enter faculty name : "));
+    fflush(stdin);
     scanf("%s", newPUser.username);
 
     write(1, "Enter faculty age : ",sizeof("Enter faculty age : "));
+    fflush(stdin);
     scanf("%d", &newPUser.age);
 
     write(1, "Enter faculty address : ",sizeof("Enter faculty address : "));
+    fflush(stdin);
     scanf("%s", newPUser.address);
 
     write(1, "Enter faculty mail : ",sizeof("Enter faculty mail : "));

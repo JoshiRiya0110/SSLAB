@@ -10,16 +10,23 @@
 #include "recordHeaders.h"
 
 #define SERVER_IP "127.0.0.1"
-#define PORT 8093
+#define PORT 8096
 
 int option,currUserID;
 int globalUserId;
 
+#define printSpace printf("\n\n")
 
+
+//****************************Function declarations*************
+//Common Functions
+
+void showMenu(int sock_fd);
+void chooseOption(int sock_fd);
+void changePassword(int sock_fd, int id);
+
+//Admin Functions
 void attemptAdminLogin(int sock_fd);
-void attemptProfessorLogin(int sock_fd);
-void attemptStudentLogin(int sock_fd);
-
 void addStudent(int sock_fd);
 void displayStudentDetails(int sock_fd);
 void addFaculty(int sock_fd);
@@ -29,20 +36,22 @@ void blockStudent(int sock_fd);
 void modifyStudentDetails(int sock_fd);
 void modifyFacultyDetails(int sock_fd);
 
+//Professor declarations
+void attemptProfessorLogin(int sock_fd);
 void displayOfferedCourses(int sock_fd);
 void addNewCourse(int sock_fd, int profID);
 void removeCourse(int sock_fd);
 void updateCourse(int sock_fd);
-void changePassword(int sock_fd, int id);
 void displayCourse(int sock_fd);
 
+//Student declarations
+void attemptStudentLogin(int sock_fd);
 void displayAllCourses(int sock_fd);
-void enroll_to_course(int sock_fd);
-void drop_course(int sock_fd);
-void display_enrolled_course_details(int sock_fd);
-void showMenu(int sock_fd);
+void enrollToCourse(int sock_fd);
+void dropCourse(int sock_fd);
+void displayEnrolledCourseDetails(int sock_fd);
 
-
+//################################Function definations###################
 
 
 void chooseOption(int sock_fd){
@@ -57,9 +66,6 @@ void chooseOption(int sock_fd){
 	printf("Your choice: ");
 	scanf("%d",&option);
 
-	//printf("Option : %d\n",option);
-	//option=option-2608;
-
 	switch(option){
 		case 1 :
 			attemptAdminLogin(sock_fd);
@@ -72,168 +78,14 @@ void chooseOption(int sock_fd){
 			break;
 		default :
 			printf("Invalid option!!\n\n");
-			//chooseOption(sock_fd);
+			chooseOption(sock_fd);
 			break;
 	}
 	return;
 }
 
-
-
-
-// void attemptStudentLogin(int sock_fd){
-// 	bool result;
-// 	Student currUser;
-
-// 	printf("Student ID : ");
-// 	scanf("%d",&currUser.userID);
-
-// 	write(1,"Password : ",sizeof("Password : "));
-// 	scanf("%s",currUser.password);
-
-
-// 	//to the server
-// 	write(sock_fd,&option,sizeof(int));
-// 	write(sock_fd,&currUser,sizeof(Student));
-
-// 	read(sock_fd,&result,sizeof(result)); //from the server
-
-// 	if(!result){
-// 		write(1,"Invalid login!!\n\n",sizeof("Invalid login!!\n\n"));
-// 		chooseOption(sock_fd);
-// 	}
-// 	else{
-// 		write(1,"Succesfully logged in!!\n\n",sizeof("Succesfully logged in!!\n\n"));
-// 	}
-// }
-
-
-void attemptStudentLogin(int sock_fd){
-        int result; 
-        Student currUser;
-
-        printf("Student ID : ");
-        scanf("%d",&currUser.userID);
-	
-	currUserID=currUser.userID;
-
-        printf("Password : ");
-	// getchar();
-	// fgets(currUser.password, sizeof(currUser.password), stdin);
-        fflush(stdin);
-        scanf("%s",currUser.password);
-
-	printf("%s\n", currUser.password);
-	fflush(stdout);
-	printf("Option for server %d\n",option);
-
-        //to the server
-        write(sock_fd,&option,sizeof(sock_fd));
-        write(sock_fd,&currUser,sizeof(Student));
-
-        read(sock_fd,&result,sizeof(result)); //from the server
-
-
-        if(result == 0)
-        {
-                printf("Invalid login!!\n\n");
-                chooseOption(sock_fd); 
-        }
-        else if(result == 1)
-        {
-                printf("Succesfully logged in!!\n\n");
-                globalUserId = currUser.userID;
-                showMenu(sock_fd);
-        }
-        else if(result == 2)
-        {
-                printf("You are blocked....Kindly contact the administrator\n\n");
-        }
-        else
-        {
-                changePassword(sock_fd,globalUserId);
-        }
-        return;
-}
-
-
-void attemptProfessorLogin(int sock_fd){
-        bool result; 
-        Professor currUser;
-
-        write(1,"Professor ID : ",sizeof("Professor ID : "));
-        scanf("%d",&currUser.userID);
-
-        write(1,"Password : ",sizeof("Password : "));
-        fflush(stdin);
-        scanf("%s",currUser.password);
-
-        //to the server
-        write(sock_fd,&option,sizeof(int));
-        write(sock_fd,&currUser,sizeof(Professor));
-
-        read(sock_fd,&result,sizeof(result)); //from the server
-
-        if(!result){
-                write(1,"Invalid login!!\n\n",sizeof("Invalid login!!\n\n"));
-                chooseOption(sock_fd);
-        }
-        else{
-                write(1,"Succesfully logged in!!\n\n",sizeof("Succesfully logged in!!\n\n"));
-                globalUserId = currUser.userID;
-                showMenu(sock_fd);
-        }
-        return;
-}
-
-
-
-void attemptAdminLogin(int sock_fd){
-        bool result; 
-        Admin currUser;
-
-        printf("Admin ID : ");
-        fflush(stdin);
-        scanf("%d",&currUser.userID);
-
-
-        printf("Password : ");
-	fflush(stdin);
-        scanf("%s",currUser.password);
-
-	printf("%s\n", currUser.password);
-	fflush(stdout);
-	printf("Option for server %d",option);
-
-
-
-        printf("selected userid %d\n",currUser.userID);
-
-        //to the server
-        write(sock_fd,&option,sizeof(sock_fd));
-        write(sock_fd,&currUser,sizeof(Admin));
-
-        read(sock_fd,&result,sizeof(result)); //from the server
-
-
-        if(!result){
-                printf("Invalid login!!\n\n");
-                chooseOption(sock_fd); 
-        }
-        else{
-                printf("Succesfully logged in!!\n\n");
-                globalUserId = currUser.userID;
-                showMenu(sock_fd);
-        }
-
-        return;
-}
-
-
-
-
-
 void showMenu(int sock_fd){
+    printf("\n\n");
 	int select;
 	if(option==1){
 		printf(" ...............WELCOME TO ADMIN MENU..................\n");
@@ -251,7 +103,8 @@ void showMenu(int sock_fd){
 
 		printf("Choose an option : ");
 		scanf("%d",&select);
-		printf("Option : %d\n",select);
+
+		printf("Select option from client: %d\n",select);
                 write(sock_fd, &select, sizeof(select));
 
 		switch(select){
@@ -259,7 +112,6 @@ void showMenu(int sock_fd){
 			addStudent(sock_fd);
 			break;
 		case 2 :
-                        
                         displayStudentDetails(sock_fd);
 			break;
 		case 3 :
@@ -325,9 +177,6 @@ void showMenu(int sock_fd){
 			write(sock_fd,&select,sizeof(int));
 			printf("Thank you\n");
 			exit(0);
-                case 7 :
-                        displayCourse(sock_fd);
-                        break;
 		default :
 			printf("Invalid option!!\n\n");
 			showMenu(sock_fd);
@@ -348,25 +197,26 @@ void showMenu(int sock_fd){
                 scanf("%d",&select);
                 printf("Option : %d\n",select);
                 write(sock_fd, &select, sizeof(select));
+                printf("Sent selected option\n");
 
                 switch(select){
                 case 1 :
                         displayAllCourses(sock_fd); //poori course file display karo
                         break;
                 case 2 :
-                        enroll_to_course(sock_fd);
+                        enrollToCourse(sock_fd);
                         break;
                 case 3 :
-                        drop_course(sock_fd);
+                        dropCourse(sock_fd);
                         break;
                 case 4 :
-                        display_enrolled_course_details(sock_fd);
+                        displayEnrolledCourseDetails(sock_fd);
                         break;
                 case 5 :
-                        changePassword(sock_fd,globalUserId);
+                        changePassword(sock_fd, globalUserId);
                         break;
                 case 6 :
-                        write(sock_fd, &select,sizeof(int));
+                        write(sock_fd, &select, sizeof(int));
                         printf("Thank you\n");
                         exit(0);
                 default :
@@ -378,95 +228,125 @@ void showMenu(int sock_fd){
 }
 
 
-
-void displayCourse(int sock_fd)
+void changePassword(int sock_fd, int id)
 {
-                int fd2 = open("CUfile",O_RDWR,0744);
-		printf("After write\n");
-                int count;
-                Courses endCourse;
-		int val = lseek(fd2,(-1)*sizeof(Courses),SEEK_END);  //changing the file pointer to the selected record
-		read(fd2,&endCourse,sizeof(Courses));
-		count=endCourse.courseID+1;
+        int result;
+        while(1)
+        {
+                char newPass[10];
+                printf("Enter the new Password : ");
+                fflush(stdin);
+                scanf("%s",newPass);
 
-
-		for(int i=0 ; i<count-1000 ; i++)
-		{
-			
-			
-				Courses tempCourse;
-
-
-				lseek(fd2,(i)*sizeof(Courses),SEEK_SET);  //changing the file pointer to the selected record
-				read(fd2,&tempCourse,sizeof(Courses));
-
-				printf("tempcourse id %d\n",tempCourse.courseID);
-				printf("tempcourse name %s\n",tempCourse.name);
-
-
-				
+                if(strcmp(newPass,"iiitb")==0)
+                {
+                        printf("You have entered the default password...please add a new password\n");
+                        continue;
                 }
-                close(fd2);
+                
+                //send to server
+                write(sock_fd, &id, sizeof(id));
+                write(sock_fd, &newPass, sizeof(newPass));
+
+                //received from the server
+                read(sock_fd, &result, sizeof(result));
+
+                if(result != -1){
+                        printf("\nPassword change successful\n");
+                        break;
+                }
+                else
+                        printf("Try again !!!!\n");
+        }
+
+        showMenu(sock_fd);
 
 }
 
 //*****************************************************Admin related functions***************************************************************
 
+void attemptAdminLogin(int sock_fd){
+    bool loginResult; 
+    Admin currUser;
+
+    printSpace;
+
+    printf("Admin ID : ");
+    fflush(stdin);
+    scanf("%d",&currUser.userID);
+
+    printf("Password : ");
+    fflush(stdin);
+    scanf("%s",currUser.password);
+
+    //to the server
+    write(sock_fd,&option,sizeof(sock_fd));
+    write(sock_fd,&currUser,sizeof(Admin));
+
+    read(sock_fd,&loginResult,sizeof(loginResult)); //from the server
+
+    if(!loginResult){
+        printf("Invalid login!!\n\n");
+        chooseOption(sock_fd); 
+    }
+    else{
+        printf("Succesfully logged in!!\n\n");
+        globalUserId = currUser.userID;
+        showMenu(sock_fd);
+    }
+}
+
 
 void addStudent(int sock_fd)
 {
    Student user;
-   bool result;
+   bool addResult;
    int select = 1;
 
-   write(1, "Enter student name : ",sizeof("Enter student name : "));
+   write(1, "Enter student name : ", sizeof("Enter student name : "));
    fflush(stdin);
    scanf("%s",user.username);
-   
-   
 
-   write(1, "Enter student age : ",sizeof("Enter student age : "));
+   write(1, "Enter student age : ", sizeof("Enter student age : "));
    scanf("%d",&user.age);
    getchar();
 
-   write(1, "Enter student address : ",sizeof("Enter student address : "));
+   write(1, "Enter student address : ", sizeof("Enter student address : "));
    fflush(stdin);
    scanf("%s",user.address);
-   
 
-   write(1, "Enter student mail : ",sizeof("Enter student mail : "));
+   write(1, "Enter student mail : ", sizeof("Enter student mail : "));
    fflush(stdin);
    scanf("%s",user.mail);
-   
 
-   write(1, "Enter student LoginId : ",sizeof("Enter student LoginId : "));
+   write(1, "Enter student LoginId : ", sizeof("Enter student LoginId : "));
    fflush(stdin);
    scanf("%s",user.loginID);
 
    user.isAccessAllowed = 1;
+
+   //Addig default password while creating a new student account
    strcpy(user.password,"iiitb");
    
-
    //send to server
    write(sock_fd, &user, sizeof(Student));
 
    //from server
-   read(sock_fd, &user,sizeof(Student));
-   read(sock_fd, &result, sizeof(result));
+   read(sock_fd, &user, sizeof(Student)); //To get, new userID
+   read(sock_fd, &addResult, sizeof(addResult));
 
-   if(result)
+   if(addResult)
    {
-	write(1, "Student added successfully ", sizeof("Student added successfully "));
-        
-	printf("Student id generated is %d\n", user.userID);
+        write(1, "Student added successfully ", sizeof("Student added successfully "));
+        printf("Student id generated is %d\n", user.userID);
    }
    else
    {
-	write(1, "Student cannot be added *** ", sizeof("Student cannot be added ***"));
+	    write(1, "Student cannot be added *** ", sizeof("Student cannot be added ***"));
    }
+
    showMenu(sock_fd);
 }
-
 
 
 void displayStudentDetails(int sock_fd)
@@ -475,9 +355,12 @@ void displayStudentDetails(int sock_fd)
    Student user;
 
    printf("Enter student ID : ");
+
    fflush(stdin);
    scanf("%d", &id);
    
+   printf("Student id is :: %d\n",id);
+
    //send to server
    write(sock_fd, &id, sizeof(id));
 
@@ -489,11 +372,10 @@ void displayStudentDetails(int sock_fd)
    printf("Student address   : %s\n",user.address);
    printf("Student mail      : %s\n",user.mail);
    printf("Student LoginId   : %s\n",user.loginID);
+
+   showMenu(sock_fd);
    
 }
-
-
-
 
 void addFaculty(int sock_fd)
 {
@@ -504,7 +386,6 @@ void addFaculty(int sock_fd)
         fflush(stdin);
         scanf("%s",user.username);
         
-
         printf("Enter faculty age : ");
         fflush(stdin);
         scanf("%d", &user.age);
@@ -512,7 +393,6 @@ void addFaculty(int sock_fd)
         printf("Enter faculty address : ");
         fflush(stdin);
         scanf("%s",user.address);
-
 
         printf("Enter faculty mail : ");
         fflush(stdin);
@@ -543,10 +423,9 @@ void addFaculty(int sock_fd)
         {
                 write(1, "Faculty cannot be added *** ", sizeof("Faculty cannot be added ***"));
         }
+
         showMenu(sock_fd);
 }
-
-
 
 void displayFacultyDetails(int sock_fd)
 {
@@ -568,12 +447,14 @@ void displayFacultyDetails(int sock_fd)
         printf("Faculty LoginId   : %s\n",user.loginID);
         
         for(int i=0; i<4; i++)
-        {
-                printf("Course id: %d\n",user.courseID[i]);
+        {       
+                if(user.courseID[i] != -1)
+                        printf("Course id: %d\n",user.courseID[i]);
         }
 
-}
+        showMenu(sock_fd);
 
+}
 
 void activateStudent(int sock_fd)
 {
@@ -598,7 +479,6 @@ void activateStudent(int sock_fd)
                 return;
         }
 
-
         if(status == 1)
         {
                 printf("Student with userID %d was already in active state.\n",user.userID);
@@ -607,6 +487,8 @@ void activateStudent(int sock_fd)
         {
                 printf("Student with userID %d has been activated.\n",user.userID);
         }
+        
+        showMenu(sock_fd);
      
 }
 
@@ -643,6 +525,8 @@ void blockStudent(int sock_fd)
         {
                 printf("Student with userID %d has been blocked.\n",user.userID);
         }
+
+        showMenu(sock_fd);
        
 }
 
@@ -720,6 +604,7 @@ void modifyStudentDetails(int sock_fd)
         printf("Mail : %s\n",user.mail);
         printf("Age : %d\n",user.age);
 
+        showMenu(sock_fd);
 }
 
 
@@ -793,6 +678,8 @@ void modifyFacultyDetails(int sock_fd)
         printf("Address : %s\n",user.address);
         printf("Mail : %s\n",user.mail);
         printf("Age : %d\n",user.age);
+
+        showMenu(sock_fd);
 }
 
 
@@ -801,8 +688,37 @@ void modifyFacultyDetails(int sock_fd)
 
 //**********************************************Professor Functions*********************************************************
 
+void attemptProfessorLogin(int sock_fd){
+        bool result; 
+        Professor currUser;
 
+        write(1,"Professor ID : ",sizeof("Professor ID : "));
+        fflush(stdout);
+        fflush(stdin);
+        scanf("%d", &currUser.userID);
 
+        write(1,"Password : ",sizeof("Password : "));
+        fflush(stdout);
+        fflush(stdin);
+        scanf("%s",currUser.password);
+
+        //to the server
+        write(sock_fd,&option,sizeof(int));
+        write(sock_fd,&currUser,sizeof(Professor));
+
+        read(sock_fd,&result,sizeof(result)); //from the server
+
+        if(!result){
+                write(1,"Invalid login!!\n\n",sizeof("Invalid login!!\n\n"));
+                chooseOption(sock_fd);
+        }
+        else{
+                write(1,"Succesfully logged in!!\n\n",sizeof("Succesfully logged in!!\n\n"));
+                globalUserId = currUser.userID;
+                showMenu(sock_fd);
+        }
+        return;
+}
 
 void displayOfferedCourses(int sock_fd) // these are the courses that are present under the current faculty
 {
@@ -816,31 +732,37 @@ void displayOfferedCourses(int sock_fd) // these are the courses that are presen
 
         //from server
         read(sock_fd, &noOfCourses, sizeof(noOfCourses));
-        for(int i=0 ; i<noOfCourses ; i++)
-        {
-                read(sock_fd, &course, sizeof(course));
-                fflush(stdout);
 
-                printf("Course Name : %s\n",course.name);
-                fflush(stdout);
+        if(noOfCourses == 0){
+                printf("\nOops !! No courses offered\n");
+        }
+        else{
+                for(int i=0 ; i<noOfCourses ; i++)
+                {
+                        read(sock_fd, &course, sizeof(course));
+                        fflush(stdout);
 
-                printf("Course ID : %d\n",course.courseID);
-                fflush(stdout);
+                        printf("Course Name : %s\n",course.name);
+                        fflush(stdout);
 
-                printf("Total Seats : %d\n",course.totalSeats);
-                fflush(stdout);
+                        printf("Course ID : %d\n",course.courseID);
+                        fflush(stdout);
 
-                printf("Number of credits : %d\n",course.credits);
-                fflush(stdout);
+                        printf("Total Seats : %d\n",course.totalSeats);
+                        fflush(stdout);
 
-                printf("Number of available seats : %d\n",course.noOfAvailableSeats);
-                fflush(stdout);
+                        printf("Number of credits : %d\n",course.credits);
+                        fflush(stdout);
 
-                printf("Department : %s\n",course.department);
-                fflush(stdout);
+                        printf("Number of available seats : %d\n",course.noOfAvailableSeats);
+                        fflush(stdout);
 
-                printf("\n\n\n");
+                        printf("Department : %s\n",course.department);
+                        fflush(stdout);
 
+                        printf("\n\n\n");
+
+                }
         }
         showMenu(sock_fd);
 }
@@ -851,7 +773,6 @@ void addNewCourse(int sock_fd, int profId)
 {
         Courses course;
         bool result;
-        //int select = 1;
 
         write(1, "Enter course name : ",sizeof("Enter course name : "));
         fflush(stdin);
@@ -864,26 +785,19 @@ void addNewCourse(int sock_fd, int profId)
         write(1, "Enter credits offered : ",sizeof("Enter credits offered : "));
         fflush(stdin);
         scanf("%d",&course.credits);
-        
-        write(1, "Number of seats available : ",sizeof("Number of seats available : "));
-        fflush(stdin);
-        scanf("%d",&course.noOfAvailableSeats);
 
         write(1, "Enter department : ",sizeof("Enter department : "));
         fflush(stdin);
         scanf("%s",course.department);
 
-        course.isRemoved = 0;
-        
+        course.noOfAvailableSeats = course.totalSeats;
 
+        course.isRemoved = 0;
 
         course.profUserID = profId;
-        
 
         //send to server
         write(sock_fd, &profId, sizeof(profId));
-        
-        
 
         int profSpaceAvailability;
 
@@ -901,22 +815,16 @@ void addNewCourse(int sock_fd, int profId)
                 read(sock_fd, &result, sizeof(result));
                 read(sock_fd, &course,sizeof(course));
                 
-
-                if(result)
-                {
+                if(result){
                         write(1, "Course added successfully ", sizeof("Course added successfully "));
-                        
                         printf("Course id generated is %d\n", course.courseID);
                 }
-                else
-                {
+                else{
                         write(1, "Course cannot be added *** ", sizeof("Course cannot be added ***"));
                 }
         }
         showMenu(sock_fd);
 }
-
-
 
 void removeCourse(int sock_fd)
 {
@@ -934,10 +842,9 @@ void removeCourse(int sock_fd)
                 printf("The course has been successfully removed....");
         else
                 printf("The course could not be removed due to some error...");
+
         showMenu(sock_fd);
 }
-
-
 
 void updateCourse(int sock_fd)
 {
@@ -1007,11 +914,119 @@ void updateCourse(int sock_fd)
 
 //**********************************************Student Functions**************************************************************
 
+void attemptStudentLogin(int sock_fd){
+        int result; 
+        Student currUser;
+
+        printf("Student ID : ");
+        fflush(stdin);
+        scanf("%d",&currUser.userID);
+
+        printf("Password : ");
+        fflush(stdin);
+        scanf("%s",currUser.password);
+
+        //to the server
+        write(sock_fd,&option,sizeof(sock_fd));
+        write(sock_fd,&currUser,sizeof(Student));
+
+        read(sock_fd,&result,sizeof(result)); //from the server
+
+        if(result == 0){
+                printf("Invalid login!!\n\n");
+                chooseOption(sock_fd); 
+        }
+        else if(result == 1){
+                printf("Succesfully logged in!!\n\n");
+                globalUserId = currUser.userID;
+                showMenu(sock_fd);
+        }
+        else if(result == 2){
+                printf("You are blocked....Kindly contact the administrator\n\n");
+        }
+        else{
+                printf("\nWelcome Logging for the first time...Please update Your password\n");
+                changePassword(sock_fd,globalUserId);
+        }
+        return;
+}
 
 void displayAllCourses(int sock_fd)
 {
-        Courses course;
+    int noOfCourses;
+    read(sock_fd, &noOfCourses, sizeof(noOfCourses));
 
+    if(noOfCourses == 0){
+        printf("No courses to display!!\n");
+    }
+    else{
+        for(int i=0 ; i< noOfCourses ; i++)
+        {    
+                Courses tempCourse;
+
+                read(sock_fd, &tempCourse, sizeof(Courses));
+
+                if(tempCourse.isRemoved != 1)
+                {
+                        printf("CourseName : %s,  courseID : %d\n",tempCourse.name, tempCourse.courseID);
+                        printf("Avaliable Seats = %d\n", tempCourse.noOfAvailableSeats);
+                }    
+        }
+    }
+    showMenu(sock_fd);
+}
+
+void enrollToCourse(int sock_fd)
+{
+        int courseId;
+        int result;
+
+        printf("Enter the course Id : ");
+        scanf("%d",&courseId);
+
+        write(sock_fd, &globalUserId, sizeof(globalUserId));
+        write(sock_fd, &courseId, sizeof(courseId));
+
+        read(sock_fd, &result, sizeof(result));
+        
+        if(result == 1)
+                printf("Successfully enrolled to courseID %d\n",courseId);
+        else if(result == 2)
+                printf("You have enrolled to max limit of courses\n");
+        else if(result == 3)
+                printf("You are already erolled to this course\n");
+        else
+                printf("Enrollment unsuccessfull\n");
+
+        showMenu(sock_fd);
+}
+
+
+void dropCourse(int sock_fd)
+{
+        int courseId;
+        int result;
+
+        printf("Enter the courseID : ");
+        scanf("%d",&courseId);
+
+        write(sock_fd, &globalUserId, sizeof(globalUserId));
+        write(sock_fd, &courseId, sizeof(courseId));
+
+        read(sock_fd, &result, sizeof(result));
+        if(result == 1)
+                printf("Course dropped successfully\n");
+        else if(result == 2)
+                printf("Please select your own courses\n");
+        else
+                printf("Could not drop the course...try again\n");
+        showMenu(sock_fd);
+}
+
+
+void displayEnrolledCourseDetails(int sock_fd)
+{
+        Courses course;
         int noOfCourses;
         
         //send to server
@@ -1019,72 +1034,40 @@ void displayAllCourses(int sock_fd)
 
         //from server
         read(sock_fd, &noOfCourses, sizeof(noOfCourses));
-        for(int i=0 ; i<noOfCourses ; i++)
-        {
-                read(sock_fd, &course, sizeof(course));
-                fflush(stdout);
 
-                printf("Course Name : %s\n",course.name);
-                fflush(stdout);
+        if(noOfCourses == 0){
+                printf("\n\nOOps You have not enrolled to any course...Take and studyyy!!\n\n");
+        }
+        else{
+                for(int i=0 ; i<noOfCourses ; i++)
+                {
+                        read(sock_fd, &course, sizeof(course));
+                        fflush(stdout);
 
-                printf("Course ID : %d\n",course.courseID);
-                fflush(stdout);
+                        printf("Course Name : %s\n",course.name);
+                        fflush(stdout);
 
-                printf("Total Seats : %d\n",course.totalSeats);
-                fflush(stdout);
+                        printf("Course ID : %d\n",course.courseID);
+                        fflush(stdout);
 
-                printf("Number of credits : %d\n",course.credits);
-                fflush(stdout);
+                        printf("Total Seats : %d\n",course.totalSeats);
+                        fflush(stdout);
 
-                printf("Number of available seats : %d\n",course.noOfAvailableSeats);
-                fflush(stdout);
+                        printf("Number of credits : %d\n",course.credits);
+                        fflush(stdout);
 
-                printf("Department : %s\n",course.department);
-                fflush(stdout);
+                        printf("Number of available seats : %d\n",course.noOfAvailableSeats);
+                        fflush(stdout);
 
-                printf("\n\n\n");
+                        printf("Department : %s\n",course.department);
+                        fflush(stdout);
 
+                        printf("\n");
+
+                }
         }
         showMenu(sock_fd);
 }
-
-
-void changePassword(int sock_fd, int id)
-{
-
-        int result;
-        while(1)
-        {
-                char newPass[10];
-                printf("Enter the new Password : ");
-                fflush(stdin);
-                scanf("%s",newPass);
-
-                if(strcmp(newPass,"iiitb")==0)
-                {
-                        printf("You have entered the default password...please add a new password\n");
-                        continue;
-                }
-                //send to server
-                write(sock_fd, &id, sizeof(id));
-                write(sock_fd, &newPass, sizeof(newPass));
-
-                //received from the server
-                read(sock_fd, &result, sizeof(result));
-
-                if(result != -1)
-                        break;
-                else
-                        printf("Try again !!!!\n");
-        }
-        
-
-}
-
-
-void enroll_to_course(int sock_fd){}
-void drop_course(int sock_fd){}
-void display_enrolled_course_details(int sock_fd){}
 
 
 //**************************************Main code*************************
